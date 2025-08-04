@@ -1,0 +1,15 @@
+{
+  "name": "kih-kiwi-zabawa-trwa-dalej",
+  "version": "1.0.0",
+  "description": "Keep It Healthy Task and Mood Tracker",
+  "main": "index.js",
+  "scripts": {
+    "start": "serve -s . -l tcp://0.0.0.0:${PORT}"
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

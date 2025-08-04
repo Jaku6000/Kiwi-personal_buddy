@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keep It Healthy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="index.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^0.12.0"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+
+<body data-theme="light">
+  <div id="app">
+
+    <!-- Main App Screen -->
+    <div id="screen-tasks" class="screen active">
+      <header class="app-header">
+        <div>
+          <h1 class="typography_h1">Cześć!</h1>
+          <p class="typography_body">Jak się dzisiaj czujesz?</p>
+        </div>
+        <button id="add-task-btn" class="add-button" aria-label="Dodaj nowe zadanie">
+          <i class="ph-bold ph-plus"></i>
+        </button>
+      </header>
+      <main class="app-main">
+        <!-- Mood Slider -->
+        <div class="card">
+          <label for="mood-slider" class="mood-label">Twój nastrój: <span id="mood-emoji">😊</span></label>
+          <input type="range" id="mood-slider" min="1" max="5" value="4" class="mood-slider">
+        </div>
+
+        <!-- Quick Add Task -->
+        <form id="quick-add-form">
+            <input type="text" id="quick-add-input" placeholder="Szybkie zadanie i Enter...">
+        </form>
+
+        <!-- AI Suggested Tasks -->
+        <div id="suggested-tasks-container">
+            <h2 class="typography_h2">Sugerowane dla Ciebie</h2>
+            <div id="suggested-tasks-list" class="tasks-list">
+                <!-- AI suggestions will be injected here -->
+            </div>
+            <div id="suggestion-loader" class="loader-container" style="display: none;">
+                <div class="loader"></div>
+                <p>Dr Kiwi myśli...</p>
+            </div>
+        </div>
+
+        <!-- User Tasks -->
+        <div>
+          <h2 class="typography_h2">Twoje zadania</h2>
+          <div id="tasks-list" class="tasks-list">
+            <!-- Tasks will be injected here -->
+          </div>
+        </div>
+        
+        <!-- Completed Tasks -->
+        <div>
+            <h2 id="completed-toggle" class="typography_h2 collapsable-header">Ukończone <i class="ph ph-caret-down"></i></h2>
+            <div id="completed-tasks-list" class="tasks-list" style="display: none;">
+                <!-- Completed tasks will be injected here -->
+            </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Calendar Screen (Placeholder) -->
+    <div id="screen-calendar" class="screen">
+       <header class="app-header">
+        <h1 class="typography_h1">Kalendarz</h1>
+      </header>
+      <main class="app-main">
+        <div class="card placeholder-card">
+            <i class="ph-light ph-calendar-x"></i>
+            <p>Integracja z kalendarzem wkrótce.</p>
+        </div>
+      </main>
+    </div>
+    
+    <!-- Mood Screen -->
+    <div id="screen-mood" class="screen">
+        <header class="app-header">
+            <h1 class="typography_h1">Analiza nastroju</h1>
+        </header>
+        <main class="app-main">
+            <div class="card">
+              <h2 class="typography_h2">Trend nastroju</h2>
+              <p class="typography_body">Ostatnie 7 dni</p>
+              <div id="mood-chart" class="mood-chart">
+                <!-- Mood chart will be rendered here -->
+              </div>
+              <div id="mood-stats" class="mood-stats">
+                <!-- Mood stats will be rendered here -->
+              </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="screen-settings" class="screen">
+        <header class="app-header">
+            <h1 class="typography_h1">Ustawienia</h1>
+        </header>
+        <main class="app-main">
+            <div class="card">
+                <div class="setting-item">
+                    <div class="setting-text">
+                        <p class="setting-title">Tryb ciemny</p>
+                        <p class="setting-description">Dla nocnych marków i oszczędzania baterii.</p>
+                    </div>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- Footer Navigation -->
+    <footer class="app-footer">
+      <nav class="app-nav">
+        <a href="#" class="nav-item active" data-screen="tasks">
+          <i class="ph-bold ph-list-checks"></i>
+          <span>Zadania</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="calendar">
+          <i class="ph ph-calendar"></i>
+          <span>Kalendarz</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="mood">
+          <i class="ph ph-smiley"></i>
+          <span>Nastrój</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="settings">
+          <i class="ph ph-gear"></i>
+          <span>Ustawienia</span>
+        </a>
+      </nav>
+    </footer>
+
+    <!-- Add/Edit Task Modal -->
+    <div id="task-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <h2 id="modal-title" class="typography_h2">Nowe zadanie</h2>
+        <form id="task-form">
+          <input type="hidden" id="task-id">
+          <div class="form-group">
+            <label for="task-title-modal">Tytuł</label>
+            <input type="text" id="task-title-modal" placeholder="np. Przeczytać rozdział książki" required>
+          </div>
+          <div class="form-group">
+            <label for="task-notes-modal">Notatki</label>
+            <textarea id="task-notes-modal" placeholder="Dodaj szczegóły..."></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="task-priority-modal">Priorytet</label>
+              <select id="task-priority-modal">
+                <option value="5">Bardzo wysoki (5)</option>
+                <option value="4">Wysoki (4)</option>
+                <option value="3" selected>Średni (3)</option>
+                <option value="2">Niski (2)</option>
+                <option value="1">Bardzo niski (1)</option>
+              </select>
+            </div>
+             <div class="form-group">
+              <label for="task-date-modal">Data</label>
+              <input type="date" id="task-date-modal">
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="cancel-btn" class="button_secondary">Anuluj</button>
+            <button type="submit" class="button_primary">Zapisz</button>
+          </div>
+          <button type="button" id="delete-task-btn" class="delete-button" style="display: none;">
+             <i class="ph-bold ph-trash"></i> Usuń zadanie
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+  <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
